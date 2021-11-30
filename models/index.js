@@ -1,5 +1,19 @@
 const UserModel = require('./user');
 const DrinksModel = require('./drinks');
-const ReviewsModel = require('./review');
+const ReviewModel = require('./review');
 
-module.exports = {UserModel, DrinksModel, ReviewsModel};
+UserModel.hasMany(DrinksModel);
+UserModel.hasMany(ReviewModel);
+
+CampsiteModel.belongsTo(UserModel);
+EateryModel.belongsTo(UserModel);
+
+
+module.exports = {
+    dbConnection: this.dbConnection,
+    
+    UserModel,
+    DrinksModel,
+    ReviewModel
+    
+};
