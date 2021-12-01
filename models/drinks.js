@@ -15,7 +15,7 @@ const db = require('../db');
             allowNull: false
         },
         price: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false
         },
         description: {

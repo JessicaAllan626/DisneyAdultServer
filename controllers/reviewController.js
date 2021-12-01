@@ -1,7 +1,6 @@
-
 const Express = require('express');
 const router = Express.Router();
-const {DrinksModel} = require('../models');
+const {ReviewsModel} = require('../models');
 
 let validateJWT = require('../middleware/validate-jwt');
 
@@ -17,20 +16,19 @@ router.post('/create', validateJWT, async (req,res) => {
     }
 
     try{
-        const newReview = await ReviewsModel.create(reviewsEntry);          
+        const newReview = await ReviewsModel.create(drinksReview);          
         res.status(200).json(newReview)
     } catch(err) {
         res.status(500).json({
             message: `Review failed to post: ${err}`});
     }
-    // ReviewModel.create(reviewsEntry)
 });
 
 
 //* Get my reviews
 router.get('/mine', validateJWT, async (req, res) => {
     let {id} = req.user;
-    
+
     try {
         const userReviews = await ReviewsModel.findAll({
             where: {
@@ -92,9 +90,3 @@ router.delete('/delete/:id', validateJWT, async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-
-
-

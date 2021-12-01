@@ -9,7 +9,7 @@ router.get('/test', validateJWT, (req, res) => {
 
 //* Create
 router.post('/create', validateJWT, async (req,res) => {
-    const {entry, genre, keywords} = req.body.drinks;
+    const {name, alcohol, location, price, description} = req.body.drinks;
     const {id} = req.user;
     const drinksEntry = {
         name,
@@ -27,7 +27,6 @@ router.post('/create', validateJWT, async (req,res) => {
         res.status(500).json({
             message: `Drink entry failed to post: ${err}`});
     }
-    // DrinksModel.create(drinksEntry)
 });
 
 
