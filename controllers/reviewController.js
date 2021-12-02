@@ -1,92 +1,87 @@
-const Express = require('express');
-const router = Express.Router();
-const {ReviewsModel} = require('../models');
+let Express = require("express");
+let router = Express.Router();
+let validateJWT = require("../middleware/validate-jwt");
+const { ReviewsModel } = require('../models');
 
-let validateJWT = require('../middleware/validate-jwt');
-
-//* Create a review
-router.post('/create', validateJWT, async (req,res) => {
-    const {nameOfDrink, reviewEntry, rating} = req.body.reviews;
-    const {id} = req.user;
-    const drinksReview = {
-        nameOfDrink,
-        reviewEntry,
-        rating,
-        owner: id  
-    }
-
-    try{
-        const newReview = await ReviewsModel.create(drinksReview);          
-        res.status(200).json(newReview)
-    } catch(err) {
-        res.status(500).json({
-            message: `Review failed to post: ${err}`});
-    }
-});
+  router.post('/create/:drinksId', validateJWT, async (req, res) => {
+          const { review } = req.body.review;
+          const drinksId = req.params.drinksId;
+          const userId = req.user.id;
+          const reviewEntry = {
+            review,
+            drinksId: drinksId,
+            userId: userId
+          }
+          try {
+            const newReview = await ReviewsModel.create(reviewEntry);
+            res.status(200).json(newReview);
+          } catch (err) {
+            res.status(500).json({ error: err });
+          }
+        });
+        
+        module.exports = router;
 
 
-//* Get my reviews
-router.get('/mine', validateJWT, async (req, res) => {
-    let {id} = req.user;
+    router.get("/mine", validateJWT, async (req, res) => {
+          let { id } = req.user;
+          try {
+            const userReviews = await ReviewsModel.findAll({
+              where: {
+                userId: id
+              }
+            });
+            res.status(200).json(userReviews);
+          } catch (err) {
+            res.status(500).json({ error: err });
+          }
+        });
 
-    try {
-        const userReviews = await ReviewsModel.findAll({
-            where: {
-                owner: id
-            }
-        });
-        res.status(200).json(userReviews);
-    } catch (err) {
-        res.status(500).json({error: `Failed to get reviews: ${err}`});
-    }
-});
+    
+    router.get('/:drinksId', validateJWT, async (req, res) => {
+          let { drinksId } = req.params;
+          try {
+            const drinksReview = await ReviewsModel.findAll({
+              where: {
+                drinksId: drinksId
+              }
+            });
+            res.status(200).json(drinksReview);
+          } catch (err) {
+            res.status(500).json({ error: err });
+          }
+        });
 
+    router.put("/update/:id", validateJWT, async (req, res) => {
+          const { review } = req.body.review;
+       
+         try {
+           const update = await ReviewsModel.update({review}, {where: {id: req.params.id, userId: req.user.id}});
+           res.status(200).json({
+        message: "success", update
+    });
+         } catch (err) {
+           res.status(500).json({ error: err });
+         }
+       })
 
-//* Update a review
-router.put('/update/:entryId', validateJWT, async (req, res) => {
-    const {nameOfDrink, reviewEntry, rating} = req.body.reviews;
-    const reviewId = req.params.entryId;
-    const userId = req.user.id;
+   router.delete("/delete/:id", validateJWT, async (req, res) => {
+         const userId = req.user.id;
+         const reviewId = req.params.id;
+       
+         try {
+           const query = {
+             where: {
+               id: reviewId,
+               userId: userId
+             }
+           };
+       
+           await ReviewsModel.destroy(query);
+           res.status(200).json({ message: "Review has been deleted" });
+         } catch (err) {
+           res.status(500).json({ error: err });
+         }
+       });
 
-    const query = {
-        where: {
-            id: reviewId,
-            owner: userId
-        }
-    };
-    const updatedReview = {
-        nameOfDrink: nameOfDrink,
-        reviewEntry: reviewEntry,
-        rating: rating
-    };
-
-    try {
-        const update = await ReviewsModel.update(updatedReview, query);
-        res.status(200).json(update);
-    } catch(err) {
-        res.status(500).json({error: `Review failed to update: ${err}`});
-    }
-
-});
-
-
-//* Delete a review
-router.delete('/delete/:id', validateJWT, async (req, res) => {
-    const reviewId = req.params.id;
-    const userId = req.user.id;
-
-    try {
-        const query = {
-            where: {
-                id: reviewId,
-                owner: userId
-            }
-        };
-        await ReviewsModel.destroy(query);
-        res.status(200).json({message: 'Review was deleted.'});
-    } catch(err) {
-        res.status(500).json({error: `Review failed to delete: ${err}`});
-    }
-});
-
-module.exports = router;
+    module.exports = router;

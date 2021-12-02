@@ -7,7 +7,7 @@ router.get('/test', validateJWT, (req, res) => {
     res.send('Practice test') 
 });
 
-//* Create
+// Create
 router.post('/create', validateJWT, async (req,res) => {
     const {name, alcohol, location, price, description} = req.body.drinks;
     const {id} = req.user;
@@ -17,7 +17,7 @@ router.post('/create', validateJWT, async (req,res) => {
         location,
         price,
         description,
-        owner: id  
+        userId: id  
     }
 
     try{
@@ -29,15 +29,24 @@ router.post('/create', validateJWT, async (req,res) => {
     }
 });
 
+// Get all drinks
+// router.get("/", async (req, res) => {
+//           try {
+//             const drinks = await DrinksModel.findAll();
+//             res.status(200).json(drinks);
+//           } catch (err) {
+//             res.status(500).json({ error: err });
+//           }
+//         });
 
-//* Get my drinks
+// Get my drinks
 router.get('/mine', validateJWT, async (req, res) => {
     let {id} = req.user;
     
     try {
         const userDrinks = await DrinksModel.findAll({
             where: {
-                owner: id
+                userId: id
             }
         });
         res.status(200).json(userDrinks);
@@ -48,15 +57,15 @@ router.get('/mine', validateJWT, async (req, res) => {
 
 
 //* Update Drink Entry
-router.put('/update/:entryId', validateJWT, async (req, res) => {
+router.put('/update/:id', validateJWT, async (req, res) => {
     const {name, alcohol, location, price, description} = req.body.drinks;
     const drinkId = req.params.entryId;
-    const userId = req.user.id;
+    const {id} = req.user;
 
     const query = {
         where: {
             id: drinkId,
-            owner: userId
+            userId: id
         }
     };
     const updatedDrink = {
@@ -80,21 +89,22 @@ router.put('/update/:entryId', validateJWT, async (req, res) => {
 //* Delete a drink
 router.delete('/delete/:id', validateJWT, async (req, res) => {
     const drinkId = req.params.id;
-    const userId = req.user.id;
+    const {id} = req.user;
 
-    try {
         const query = {
             where: {
                 id: drinkId,
-                owner: userId
+                userId: id
             }
         };
+
+    try{
         await DrinksModel.destroy(query);
         res.status(200).json({message: 'Drink Deleted'});
     } catch(err) {
         res.status(500).json({error: err});
     }
-});
+})
 
 
 module.exports = router;

@@ -21,6 +21,9 @@ const db = require('../db');
         description: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        userId: {
+            type: DataTypes.INTEGER
         }
     });
 

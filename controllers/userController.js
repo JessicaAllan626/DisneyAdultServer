@@ -4,37 +4,35 @@ const { UniqueConstraintError } = require('sequelize/lib/errors'); 
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 
-router.get('/test', (req, res) => {
-    res.send('Practice test') 
+router.get('/practice', (req, res) => {
+    res.send('Hey! This is the practice route for users!  Good job!') 
 });
 
 router.post('/register', async (req, res) => {
 
-    let {firstName, lastName, email, password} = req.body.user;
+    let {email, password} = req.body.user;
 
     try {
         const User = await UserModel.create({
-            firstName,
-            lastName,
             email,
             password: bcrypt.hashSync(password, 13),
         });
 
         let token = jwt.sign({id: User.id}, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24});
-
+        
         res.status(201).json({
-            message: 'User has been successfully registered.',
+            message: 'User successfully registered',
             user: User,
             sessionToken: token
         });
     } catch (err) {
         if (err instanceof UniqueConstraintError) {
             res.status(409).json({
-                message: "This email has already been used.",
+                message: "Email already in use! Try again!",
             });
         } else {
             res.status(500).json({
-                message: "Failed to register new user.",
+                message: "Failed to register user ;(",
             });
         }
     }
@@ -42,12 +40,12 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
 
-    let {username, password} = req.body.user;
+    let {email, password} = req.body.user;
 
     try {
         let loginUser = await UserModel.findOne({
             where: {
-                username: username,
+                email: email,
             },
         });
 
@@ -61,17 +59,17 @@ router.post('/login', async (req, res) => {
 
             res.status(200).json({
               user: loginUser,
-              message: "User has been successfully logged in.",
+              message: "User successfully logged in!",
                 sessionToken: token
             });
         } else {
                 res.status(401).json({
-                message: 'Incorrect username/password'
+                message: 'Incorrect Username or Password'
               })
         }
             } else {
                    res.status(401).json({
-                   message: 'Incorrect username/password'
+                   message: 'Incorrect username or password'
                 });
             }
     } catch (error) {
@@ -82,4 +80,4 @@ router.post('/login', async (req, res) => {
 });
 
 
-module.exports = router; 
+module.exports = router;
